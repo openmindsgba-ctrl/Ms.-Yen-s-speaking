@@ -907,7 +907,7 @@ Output strictly a JSON object matching this schema:
   ],
   "essay": {
     "topic": "Describe your favorite...",
-    "guidance": "Gợi ý bằng tiếng Việt..."
+    "guidance": "Provide helpful guidance/hints in English. Instruct the student to use today's grammar topic in their writing."
   }
 }`;
 

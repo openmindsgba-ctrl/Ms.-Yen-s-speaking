@@ -514,7 +514,7 @@ export default function App() {
                         <div className="w-20 h-20 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
                         <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-indigo-600" size={24} />
                       </div>
-                      <p className="text-gray-500 font-medium animate-pulse text-center px-4">Gemini is preparing the lesson for you...</p>
+                      <p className="text-gray-500 font-medium animate-pulse text-center px-4">Ms Yen is preparing the lesson for you...</p>
                     </motion.div>
                   ) : readingText ? (
                     <motion.div key="result" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full flex flex-col items-center gap-4">
