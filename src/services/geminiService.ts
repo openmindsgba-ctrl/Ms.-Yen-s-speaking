@@ -995,6 +995,40 @@ Output JSON:
   }
 };
 
+export const evaluateEssay = async (
+  essayText: string,
+  topic: string,
+  level: EnglishLevel
+): Promise<{ score: number; feedback: string; }> => {
+  const systemInstruction = `You are an expert English teacher. Grade the following essay written by a student at English level ${level}.
+Topic: ${topic}
+Student Essay:
+${essayText}
+
+Provide an overall score out of 10, and brief feedback (in Vietnamese) highlighting grammar/vocabulary strengths and corrections.
+Format strictly as JSON:
+{
+  "score": 8.5,
+  "feedback": "..."
+}`;
+
+  const response = await generateWithFallback(getTextModels(), {
+    contents: [{ role: "user", parts: [{ text: "Please evaluate my essay." }] }],
+    config: { systemInstruction, responseMimeType: "application/json", maxOutputTokens: 1024 },
+  });
+
+  try {
+    const result = parseSafeJson(response.text || "{}");
+    return {
+      score: Math.min(10, Math.max(0, Number(result.score) || 0)),
+      feedback: result.feedback || "Cố gắng lên nhé!"
+    };
+  } catch (err) {
+    console.error("Essay evaluation error", err);
+    throw new Error("Cannot grade the essay at this time.");
+  }
+};
+
 export const evaluateComprehensionAnswer = async (
   apiKey: string,
   question: string,

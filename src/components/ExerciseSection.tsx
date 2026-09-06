@@ -3,10 +3,15 @@ import { ExerciseData, WrittenQuestion, QuestionType } from '../types';
 import { CheckCircle, X, Award, FileText, Info } from 'lucide-react';
 import { motion } from 'motion/react';
 
+import { evaluateEssay } from '../services/geminiService';
+import { EnglishLevel } from '../types';
+
 interface ExerciseSectionProps {
   exerciseData: ExerciseData;
   onComplete: (score: number) => void;
+  onWritingComplete?: (score: number) => void;
   savedScore?: number | null;
+  level: EnglishLevel;
 }
 
 const TYPE_LABELS: Record<QuestionType, string> = {
@@ -16,9 +21,14 @@ const TYPE_LABELS: Record<QuestionType, string> = {
   complete_sentence: "Part 4: Complete the sentence using the given words"
 };
 
-export const ExerciseSection: React.FC<ExerciseSectionProps> = ({ exerciseData, onComplete, savedScore }) => {
+export const ExerciseSection: React.FC<ExerciseSectionProps> = ({ exerciseData, onComplete, onWritingComplete, savedScore, level }) => {
   const [userInputs, setUserInputs] = useState<Record<string, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
+  
+  // Essay states
+  const [isEssayGrading, setIsEssayGrading] = useState(false);
+  const [essayScore, setEssayScore] = useState<number | null>(null);
+  const [essayFeedback, setEssayFeedback] = useState<string | null>(null);
 
   const questions = exerciseData.questions || [];
 
@@ -197,9 +207,68 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({ exerciseData, 
               <textarea
                 value={userInputs['essay'] || ''}
                 onChange={(e) => handleInputChange('essay', e.target.value)}
-                className="w-full border-2 border-slate-200 rounded-xl p-4 focus:border-teal-400 outline-none min-h-[200px]"
+                disabled={isEssayGrading || essayScore !== null}
+                className={`w-full border-2 rounded-xl p-4 outline-none min-h-[200px] transition-colors ${
+                  essayScore !== null 
+                    ? 'bg-gray-50 border-gray-200 text-gray-700' 
+                    : 'bg-white border-slate-200 focus:border-teal-400'
+                }`}
                 placeholder="Start writing your essay here..."
               />
+
+              {!essayScore && (
+                <div className="mt-4 flex justify-end">
+                  <button
+                    onClick={async () => {
+                      const text = (userInputs['essay'] || '').trim();
+                      if (!text) {
+                        alert("Please write your essay first!");
+                        return;
+                      }
+                      setIsEssayGrading(true);
+                      setEssayFeedback(null);
+                      try {
+                        const result = await evaluateEssay(text, exerciseData.essay!.topic, level);
+                        setEssayScore(result.score);
+                        setEssayFeedback(result.feedback);
+                        if (onWritingComplete) onWritingComplete(result.score);
+                      } catch (err) {
+                        alert("Lỗi chấm điểm. Vui lòng thử lại sau.");
+                      } finally {
+                        setIsEssayGrading(false);
+                      }
+                    }}
+                    disabled={isEssayGrading || !userInputs['essay']?.trim()}
+                    className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md disabled:opacity-50 flex items-center gap-2 transition-all"
+                  >
+                    {isEssayGrading ? (
+                      <>
+                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                         Grading...
+                      </>
+                    ) : (
+                      "Submit Essay"
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {essayScore !== null && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6 p-5 bg-white border-2 border-teal-200 rounded-xl shadow-sm">
+                  <div className="flex items-center gap-4 mb-4 pb-4 border-b border-gray-100">
+                    <div className="w-16 h-16 rounded-full bg-teal-100 flex items-center justify-center border border-teal-200 shrink-0">
+                      <span className="text-2xl font-black text-teal-700">{essayScore}</span>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-800 text-lg">Essay Score</h4>
+                      <p className="text-sm text-slate-500">Graded by AI Teacher</p>
+                    </div>
+                  </div>
+                  <div className="text-slate-700 whitespace-pre-wrap leading-relaxed text-sm">
+                    {essayFeedback}
+                  </div>
+                </motion.div>
+              )}
             </div>
           </div>
         )}
