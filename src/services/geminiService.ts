@@ -395,6 +395,14 @@ export const generateContent = async (
       // Note: readingText2 should ideally still have blanks, which the AI should have generated.
     }
 
+    if (!finalReadingText || finalReadingText === "string" || finalReadingText.trim().length < 10) {
+      throw new Error("AI không thể tạo được bài đọc (reading passage). Vui lòng cung cấp chủ đề hoặc hình ảnh rõ ràng hơn và thử lại.");
+    }
+
+    if (!result.vocabulary || !Array.isArray(result.vocabulary) || result.vocabulary.length === 0) {
+      throw new Error("AI không thể tạo được danh sách từ vựng (vocabulary). Vui lòng thử lại.");
+    }
+
     return {
       prompt: result.prompt || "",
       readingText: finalReadingText,
@@ -408,8 +416,12 @@ export const generateContent = async (
       comprehensionQuestions: result.comprehensionQuestions || null,
       homework: result.homework || null,
     };
-  } catch (e) {
+  } catch (e: any) {
     console.error("Failed to parse JSON response:", response.text, e);
+    // If it's our own validation error, propagate it
+    if (e.message && e.message.includes("AI không thể tạo được")) {
+      throw e;
+    }
     throw new Error("Failed to parse lesson content. Please try again.");
   }
 };
