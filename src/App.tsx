@@ -610,12 +610,7 @@ export default function App() {
                         </div>
                       )}
 
-                      {/* Homework / Essay Section */}
-                      {homeworkData && (
-                        <div className="w-full max-w-5xl mx-auto mt-8">
-                          <HomeworkSection data={homeworkData} />
-                        </div>
-                      )}
+
 
                       {/* Overall Score Summary */}
                       {(recorder.evaluation?.score || reading2Score || comprehensionScore || exerciseScore) && (
