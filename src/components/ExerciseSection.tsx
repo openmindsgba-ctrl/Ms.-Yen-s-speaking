@@ -257,7 +257,7 @@ export const ExerciseSection: React.FC<ExerciseSectionProps> = ({ exerciseData, 
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6 p-5 bg-white border-2 border-teal-200 rounded-xl shadow-sm">
                   <div className="flex items-center gap-4 mb-4 pb-4 border-b border-gray-100">
                     <div className="w-16 h-16 rounded-full bg-teal-100 flex items-center justify-center border border-teal-200 shrink-0">
-                      <span className="text-2xl font-black text-teal-700">{essayScore}</span>
+                      <span className="text-2xl font-black text-teal-700">{essayScore}<span className="text-sm text-teal-500">/10</span></span>
                     </div>
                     <div>
                       <h4 className="font-bold text-slate-800 text-lg">Essay Score</h4>
